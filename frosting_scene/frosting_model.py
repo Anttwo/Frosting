@@ -2200,24 +2200,63 @@ def compute_level_points_along_normals(
     return outputs
     
     
-def convert_frosting_into_gaussians(frosting:Frosting):
+def convert_frosting_into_gaussians(
+    frosting:Frosting,
+    means=None,
+    quaternions=None,
+    scales=None,
+    opacities=None,
+    sh_coordinates_dc=None,
+    sh_coordinates_rest=None,
+    ):
     new_gaussians = GaussianModel(frosting.sh_levels - 1)
     
     with torch.no_grad():
-        points = frosting.points
-        opacities = inverse_sigmoid(frosting.strengths)
-        features_dc = frosting._sh_coordinates_dc.permute(0, 2, 1)
-        features_extra = frosting._sh_coordinates_rest.permute(0, 2, 1)
-        scales = scale_inverse_activation(frosting.scaling)
-        rots = frosting.quaternions
+        # Means
+        if means is None:
+            points = frosting.points
+            if frosting.use_background_gaussians or frosting.use_background_sphere:
+                points = torch.cat([points, frosting.bg_points], dim=0)
+        else:
+            points = means
+            
+        # Opacities
+        if opacities is None:
+            opacities = inverse_sigmoid(frosting.strengths)
+            if frosting.use_background_gaussians or frosting.use_background_sphere:
+                opacities = torch.cat([opacities, inverse_sigmoid(frosting.bg_strengths)], dim=0)
+        else:
+            opacities = inverse_sigmoid(opacities)
+            
+        # Scaling
+        if scales is None:
+            scales = scale_inverse_activation(frosting.scaling)
+            if frosting.use_background_gaussians or frosting.use_background_sphere:
+                scales = torch.cat([scales, scale_inverse_activation(frosting.bg_scaling)], dim=0)
+        else:
+            scales = scale_inverse_activation(scales)
         
-        if frosting.use_background_gaussians or frosting.use_background_sphere:
-            points = torch.cat([points, frosting.bg_points], dim=0)
-            opacities = torch.cat([opacities, inverse_sigmoid(frosting.bg_strengths)], dim=0)
-            features_dc = torch.cat([features_dc, frosting._bg_sh_coordinates_dc.permute(0, 2, 1)], dim=0)
-            features_extra = torch.cat([features_extra, frosting._bg_sh_coordinates_rest.permute(0, 2, 1)], dim=0)
-            scales = torch.cat([scales, scale_inverse_activation(frosting.bg_scaling)], dim=0)
-            rots = torch.cat([rots, frosting.bg_quaternions], dim=0)
+        # Quaternions
+        if quaternions is None:
+            rots = frosting.quaternions
+            if frosting.use_background_gaussians or frosting.use_background_sphere:
+                rots = torch.cat([rots, frosting.bg_quaternions], dim=0)
+        else:
+            rots = quaternions
+        
+        # Color features
+        if sh_coordinates_dc is None:
+            features_dc = frosting._sh_coordinates_dc.permute(0, 2, 1)
+            if frosting.use_background_gaussians or frosting.use_background_sphere:
+                features_dc = torch.cat([features_dc, frosting._bg_sh_coordinates_dc.permute(0, 2, 1)], dim=0)
+        else:
+            features_dc = sh_coordinates_dc
+        if sh_coordinates_rest is None:
+            features_extra = frosting._sh_coordinates_rest.permute(0, 2, 1)
+            if frosting.use_background_gaussians or frosting.use_background_sphere:
+                features_extra = torch.cat([features_extra, frosting._bg_sh_coordinates_rest.permute(0, 2, 1)], dim=0)
+        else:
+            features_extra = sh_coordinates_rest
         
         xyz = points.cpu().numpy()
         opacities = opacities.cpu().numpy()

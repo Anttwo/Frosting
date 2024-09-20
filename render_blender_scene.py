@@ -51,6 +51,10 @@ if __name__ == "__main__":
                         'Only the background Gaussians of the Frosting model with the highest number of Gaussians will be rendered, '
                         'as it is assumed to be the background scene.')
     
+    parser.add_argument('--export_frame_as_ply', type=int, default=0, 
+                        help='Export the Frosting representation of the scene at the specified frame as a PLY file. '
+                        'If 0, no PLY file will be exported and all frames will be rendered.')
+    
     parser.add_argument('--sh_degree', type=int, default=None, help='SH degree to use.')
     parser.add_argument('--gpu', type=int, default=0, help='Index of GPU device to use.')
     parser.add_argument('--white_background', type=str2bool, default=False, help='Use a white background instead of black.')
@@ -66,6 +70,7 @@ if __name__ == "__main__":
     deformation_threshold = args.deformation_threshold
     use_occlusion_culling = args.occlusion_culling
     use_background_gaussians = args.render_background_gaussians
+    frame_to_export_as_ply = args.export_frame_as_ply - 1
     
     # ----- Setup -----
     torch.cuda.set_device(args.gpu)
@@ -109,27 +114,42 @@ if __name__ == "__main__":
     frosting_comp.use_background_gaussians = frosting_comp.use_background_gaussians and use_background_gaussians
     
     with torch.no_grad():
-        for i_frame in range(n_frames):
-            # Change pose of meshes if needed and render the scene
-            rgb_render = render_composited_image(
+        if frame_to_export_as_ply == -1:
+            for i_frame in range(n_frames):
+                # Change pose of meshes if needed and render the scene
+                rgb_render = render_composited_image(
+                    package=package,
+                    frosting=frosting_comp, 
+                    render_cameras=render_cameras, 
+                    i_frame=i_frame,
+                    sh_degree=sh_degree,
+                    deformation_threshold=deformation_threshold,
+                    use_occlusion_culling=use_occlusion_culling,
+                ).nan_to_num().clamp(min=0, max=1)
+            
+                # Save image
+                save_path = os.path.join(output_path, f"{i_frame+1:04d}.png")
+                img = Image.fromarray((rgb_render.cpu().numpy() * 255).astype(np.uint8))
+                img.save(save_path)
+                
+                # Info
+                if i_frame % print_every_n_frames == 0:
+                    print(f"Saved frame {i_frame} to {save_path}")
+                    
+                torch.cuda.empty_cache()
+        else:
+            # Export PLY file
+            ply_save_path = os.path.join(output_path, f"{frame_to_export_as_ply+1:04d}.ply")
+            render_composited_image(
                 package=package,
                 frosting=frosting_comp, 
                 render_cameras=render_cameras, 
-                i_frame=i_frame,
+                i_frame=frame_to_export_as_ply,
                 sh_degree=sh_degree,
                 deformation_threshold=deformation_threshold,
                 use_occlusion_culling=use_occlusion_culling,
-            ).nan_to_num().clamp(min=0, max=1)
-        
-            # Save image
-            save_path = os.path.join(output_path, f"{i_frame+1:04d}.png")
-            img = Image.fromarray((rgb_render.cpu().numpy() * 255).astype(np.uint8))
-            img.save(save_path)
-            
-            # Info
-            if i_frame % print_every_n_frames == 0:
-                print(f"Saved frame {i_frame} to {save_path}")
-                
-            torch.cuda.empty_cache()
+                return_GS_model=True,
+            ).save_ply(ply_save_path)
+            CONSOLE.print(f"Exported PLY file of frame {frame_to_export_as_ply+1} to {ply_save_path}")
 
 CONSOLE.print("Rendering completed.")

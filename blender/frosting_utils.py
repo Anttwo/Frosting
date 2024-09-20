@@ -2,7 +2,7 @@ import json
 import torch
 import numpy as np
 from frosting_scene.cameras import CamerasWrapper, GSCamera, focal2fov, fov2focal
-from frosting_scene.frosting_model import Frosting, load_frosting_model
+from frosting_scene.frosting_model import Frosting, load_frosting_model, convert_frosting_into_gaussians
 from pytorch3d.transforms import (
     quaternion_to_matrix, 
     quaternion_invert,
@@ -556,6 +556,7 @@ def render_composited_image(
     sh_degree:int=None,
     deformation_threshold:float=2.,
     use_occlusion_culling:bool=False,
+    return_GS_model:bool=False,
     ):
     
     use_sh = (sh_degree is None) or sh_degree > 0
@@ -573,13 +574,16 @@ def render_composited_image(
     else:
         splat_opacities = None
     
-    return frosting.render_image_gaussian_rasterizer(
-        nerf_cameras=render_cameras,
-        camera_indices=i_frame,
-        sh_deg=sh_degree,
-        compute_color_in_rasterizer=not use_sh,
-        point_opacities=splat_opacities,
-        sh_rotations=None if not use_sh else get_frosting_sh_rotations(frosting),
-        use_occlusion_culling=use_occlusion_culling,
-    )
+    if return_GS_model:
+        return convert_frosting_into_gaussians(frosting, opacities=splat_opacities)
+    else:
+        return frosting.render_image_gaussian_rasterizer(
+            nerf_cameras=render_cameras,
+            camera_indices=i_frame,
+            sh_deg=sh_degree,
+            compute_color_in_rasterizer=not use_sh,
+            point_opacities=splat_opacities,
+            sh_rotations=None if not use_sh else get_frosting_sh_rotations(frosting),
+            use_occlusion_culling=use_occlusion_culling,
+        )
     
