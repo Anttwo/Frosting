@@ -26,7 +26,7 @@ if __name__ == "__main__":
                         help="Depth of Poisson reconstruction. If -1, will compute automatically the depth based on the SuGaR model.")
     parser.add_argument('--cleaning_quantile', type=float, default=0.1, 
                         help='Quantile to use for cleaning the Poisson mesh.')
-    parser.add_argument('--connected_components_vis_th', type=float, default=0.5, 
+    parser.add_argument('--connected_components_vis_th', type=float, default=0.001, 
                         help='Threshold to use for removing non-visible connected components in the mesh.')
     parser.add_argument('--project_mesh_on_surface_points', type=str2bool, default=True, help='If True, project the mesh on the surface points for better details.')
     
