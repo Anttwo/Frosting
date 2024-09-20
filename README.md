@@ -54,8 +54,8 @@ We demonstrate the effectiveness of our method on various synthetic and real sce
 <details>
 <summary><span style="font-weight: bold;">To-do list</span></summary>
 <ul>
-  <li><b>Depth or normal regularization:</b> Add depth/normal regularization relying on pretrained models (DepthAnythingV2, for example).
-  </li>
+  <li><b>gsplat support:</b> Make the code compatible with gsplat's rasterizer from the Nerfstudio team. A wrapper is already available in `./gsplat_wrapper`.</li>
+  <li><b>Depth or normal regularization:</b> Add depth/normal regularization relying on pretrained models (DepthAnythingV2, for example).</li>
 </ul>
 </details>
 
