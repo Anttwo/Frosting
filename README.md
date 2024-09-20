@@ -47,7 +47,7 @@ We demonstrate the effectiveness of our method on various synthetic and real sce
 <details>
 <summary><span style="font-weight: bold;">Updates</span></summary>
 <ul>
-  <li><b>[09/16/2024]</b> Code release.</li>
+  <li><b>[09/20/2024]</b> Code release.</li>
 </ul>
 </details><br>
 
