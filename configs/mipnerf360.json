@@ -1,0 +1,46 @@
+{
+    "dataset_name": "Mip-NeRF360",
+    "dataset_type": "real",
+    "bg_color": [0.0, 0.0, 0.0],
+    "white_background": false,
+    "load_training_data": true,
+    "use_standard_eval_split": true,
+    "coarse_sugar":
+    {
+        "iteration_to_load": 7000,
+        "regularization_type": "sdf",
+        "estimation_factor": 0.2,
+        "normal_factor": 0.2
+    },
+    "frosting_extraction":
+    {
+        "surface_level": 0.3,
+        "n_vertices_in_mesh": 1000000,
+        "poisson_depth": "auto",
+        "cleaning_quantile": 0.1,
+        "connected_components_vis_th": 0.001
+    },
+    "frosting_refinement":
+    {
+        "use_occlusion_culling": false,
+        "gaussians_in_frosting": 5000000,
+        "refinement_iterations": 15000,
+        "frosting_level": 0.01,
+        "min_frosting_size": 0.001,
+        "initial_proposal_std_range": 3.0,
+        "final_proposal_range": 3.0,
+        "final_clamping_range": 0.1,
+        "use_background_sphere": false,
+        "use_background_gaussians": true
+    },
+    "scenes":
+    {
+        "../data/colmap/garden": "./output/vanilla_gs/garden/",
+        "../data/colmap/kitchen": "./output/vanilla_gs/kitchen/",
+        "../data/colmap/room": "./output/vanilla_gs/room/",
+        "../data/colmap/bicycle": "./output/vanilla_gs/bicycle/",
+        "../data/colmap/counter": "./output/vanilla_gs/counter/",
+        "../data/colmap/bonsai": "./output/vanilla_gs/bonsai/",
+        "../data/colmap/stump": "./output/vanilla_gs/stump/"
+    }
+}

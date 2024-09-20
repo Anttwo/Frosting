@@ -1,0 +1,45 @@
+{
+    "dataset_name": "Shelly",
+    "dataset_type": "synthetic",
+    "bg_color": [1.0, 1.0, 1.0],
+    "white_background": true,
+    "load_training_data": false,
+    "use_standard_eval_split": false,
+    "coarse_sugar":
+    {
+        "iteration_to_load": 7000,
+        "regularization_type": "density",
+        "estimation_factor": 0.2,
+        "normal_factor": 0.2
+    },
+    "frosting_extraction":
+    {
+        "surface_level": 0.3,
+        "n_vertices_in_mesh": 1000000,
+        "poisson_depth": "auto",
+        "cleaning_quantile": 0.0,
+        "connected_components_vis_th": 0.5
+    },
+    "frosting_refinement":
+    {
+        "use_occlusion_culling": false,
+        "gaussians_in_frosting": 2000000,
+        "refinement_iterations": 15000,
+        "frosting_level": 0.01,
+        "min_frosting_size": 0.001,
+        "initial_proposal_std_range": 3.0,
+        "final_proposal_range": 3.0,
+        "final_clamping_range": 0.1,
+        "use_background_sphere": false,
+        "use_background_gaussians": false
+    },
+    "scenes":
+    {
+        "../data/synthetic/kitten": "./output/vanilla_gs/kitten/",
+        "../data/synthetic/khady": "./output/vanilla_gs/khady/",
+        "../data/synthetic/pug": "./output/vanilla_gs/pug/",
+        "../data/synthetic/horse": "./output/vanilla_gs/horse/",
+        "../data/synthetic/woolly": "./output/vanilla_gs/woolly/",
+        "../data/synthetic/fernvase": "./output/vanilla_gs/fernvase/"
+    }
+}
