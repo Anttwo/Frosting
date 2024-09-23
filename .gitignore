@@ -30,6 +30,7 @@ nvdiffrast/*
 configs/test.json
 configs/test_shelly.json
 dev_test.py
+visualize_results_dev.ipynb
 
 # Sandboxes
 frosting_render_blender_package.ipynb
