@@ -1163,12 +1163,15 @@ class Frosting(nn.Module):
         # Scaling factors are the norms of the columns of the transformation matrices
         edited_scales = torch.norm(gaussian_transformations, dim=-2)
         scales[self._gaussian_edition_mask] = edited_scales
+        scales = scales.nan_to_num()
         
         # Rotations are the normalized columns of the transformation matrices
         quaternions[self._gaussian_edition_mask] = torch_normalize(
             matrix_to_quaternion(gaussian_transformations / edited_scales[..., None, :].clamp_min(1e-10)), 
             dim=-1
         )
+        nan_mask = quaternions.isnan().any(dim=-1)
+        quaternions[nan_mask] = torch.tensor([1., 0., 0., 0.], device=self.device, dtype=torch.float32)
 
         return quaternions, scales
     

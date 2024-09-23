@@ -34,9 +34,10 @@ if __name__ == "__main__":
                         help="Method to use for rescaling the thickness of the Frosting. Can be 'median' or 'triangle'."
                         "The 'triangle' method may be more accurate but also more unstable and can lead to more artifacts.")
     
-    parser.add_argument('--adaptation_method', type=str, default='complex', 
+    parser.add_argument('--adaptation_method', type=str, default='simple', 
                         help="Method to use for automatically adapting the parameters of the Gaussians. Can be 'simple' or 'complex'."
-                        "The 'simple' method is faster and more stable but may be less accurate.")
+                        "The 'simple' method is faster and more stable but may be less accurate."
+                        "The 'complex' method can be more accurate but may produce more artifacts.")
     
     parser.add_argument('--deformation_threshold', type=float, default=2., 
                         help='Threshold for the deformation of the Frosting. '
