@@ -568,6 +568,8 @@ class Frosting(nn.Module):
                 fg_bbox_min_tensor = shell_base_verts.min(dim=0, keepdim=True)[0]
                 fg_bbox_max_tensor = shell_base_verts.max(dim=0, keepdim=True)[0]
                 fg_mask = (nerfmodel.gaussians.get_xyz > fg_bbox_min_tensor).all(dim=-1) * (nerfmodel.gaussians.get_xyz < fg_bbox_max_tensor).all(dim=-1)
+                
+                # Compute background Gaussians as the Gaussians outside the foreground bbox
                 bg_mask = ~fg_mask
                 _bg_points = nerfmodel.gaussians._xyz[bg_mask].detach()
                 _bg_opacities = nerfmodel.gaussians._opacity[bg_mask].detach()
@@ -575,13 +577,18 @@ class Frosting(nn.Module):
                 _bg_sh_coordinates_rest = nerfmodel.gaussians._features_rest[bg_mask].detach()
                 _bg_scales = nerfmodel.gaussians._scaling[bg_mask].detach()
                 _bg_quaternions = nerfmodel.gaussians._rotation[bg_mask].detach()
-            self.n_points = len(_bg_points) + self.n_points
-            self._bg_points = torch.nn.Parameter(_bg_points, requires_grad=True).to(device)
-            self._bg_opacities = torch.nn.Parameter(_bg_opacities, requires_grad=True).to(device)
-            self._bg_sh_coordinates_dc = torch.nn.Parameter(_bg_sh_coordinates_dc, requires_grad=True).to(device)
-            self._bg_sh_coordinates_rest = torch.nn.Parameter(_bg_sh_coordinates_rest, requires_grad=True).to(device)
-            self._bg_scales = torch.nn.Parameter(_bg_scales, requires_grad=True).to(device)
-            self._bg_quaternions = torch.nn.Parameter(_bg_quaternions, requires_grad=True).to(device)
+            if len(_bg_points) == 0:
+                print("No background gaussians found. Disabling background gaussians.")
+                self.use_background_gaussians = False
+            else:
+                print(f"Using {len(_bg_points)} background gaussians.")
+                self.n_points = len(_bg_points) + self.n_points
+                self._bg_points = torch.nn.Parameter(_bg_points, requires_grad=True).to(device)
+                self._bg_opacities = torch.nn.Parameter(_bg_opacities, requires_grad=True).to(device)
+                self._bg_sh_coordinates_dc = torch.nn.Parameter(_bg_sh_coordinates_dc, requires_grad=True).to(device)
+                self._bg_sh_coordinates_rest = torch.nn.Parameter(_bg_sh_coordinates_rest, requires_grad=True).to(device)
+                self._bg_scales = torch.nn.Parameter(_bg_scales, requires_grad=True).to(device)
+                self._bg_quaternions = torch.nn.Parameter(_bg_quaternions, requires_grad=True).to(device)
            
         # ===== Render parameters =====
         if nerfmodel is not None:
